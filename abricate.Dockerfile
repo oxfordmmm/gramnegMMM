@@ -8,4 +8,4 @@ RUN apt-get install -y --no-install-recommends \
   liblist-moreutils-perl \
     && apt-get clean && rm -rf /var/lib/apt/lists/* 
 
-RUN git clone https://github.com/tseemann/abricate.git && ./abricate/bin/abricate --check && ./abricate/bin/abricate --setupdb && ./abricate/bin/abricate ./abricate/test/assembly.fa
+RUN git clone https://github.com/tseemann/abricate.git && ./abricate/bin/abricate --check && ./abricate/bin/abricate --setupdb && ./abricate/bin/abricate ./abricate/test/assembly.fa && mv abricate/bin/abricate /usr/bin && mv "./abricate/bin/abricate-get_db" /usr/bin
