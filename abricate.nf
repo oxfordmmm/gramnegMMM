@@ -33,6 +33,9 @@ def helpMessage() {
       --output_dir                       Path to output dir "must be surrounded by quotes"
       --pattern_match                    The regular expression that will match files e.g '*.fasta'
       --input_dir                        Path to directory containing paired fastq files
+
+    Optional arguments:
+      --input_db                         Path to directory containing sequences file for the database
    """.stripIndent()
 }
 
@@ -62,30 +65,58 @@ if (params.input_dir){
 
   Channel
     .fromPath( fastas )
-    .ifEmpty { error "Cannot find any bam files matching: ${bams}" }
+    .ifEmpty { error "Cannot find any fasta files matching: ${fastas}" }
     .set {fasta_files}
 } else {
-    error "Please enter a directory of input bam files"
+    error "Please enter a directory of input fasta files"
     exit 0
 }
 
-process abricate_process {
-   echo true
-   scratch true
+if (params.input_db) {
+    input_db_dir = params.input_db
+    input_db_name = file(input_db_dir).baseName
 
-   publishDir output_dir, mode: 'copy'
+    process abricate_process {
+       echo true
+       scratch true
+       containerOptions "-B ${input_db_dir}:/abricate/db/${input_db_name}"
 
-   input:
-   set file(assemblies) from fasta_files
+       publishDir output_dir, mode: 'copy'
+
+       input:
+       set file(assemblies) from fasta_files
+
+       output:
+       file "*.tab" into abricate_tabs
+
+       script:
+       id = assemblies.baseName
+       """
+       abricate --setupdb
+       abricate ${assemblies} > ${id}.tab
+       """
+    }
+} else {
+    log.info("No DB specified, continuing with default DBs")
+
+    process abricate_process {
+       echo true
+       scratch true
+
+       publishDir output_dir, mode: 'copy'
+
+       input:
+       set file(assemblies) from fasta_files
        
-   output:
-   file "*.tab" into abricate_tabs
+       output:
+       file "*.tab" into abricate_tabs
 
-   script:
-   id = assemblies.baseName
-   """
-   abricate ${assemblies} > ${id}.tab
-   """
+       script:
+       id = assemblies.baseName
+       """
+       abricate ${assemblies} > ${id}.tab
+       """
+   }
 }
 
 process abricate_summarise {
@@ -102,7 +133,7 @@ process abricate_summarise {
 
    script:
    """
-   abricate ${summary_out} > summary.tab
+   abricate --summary ${summary_out} > summary.tab
    """
 }
 
