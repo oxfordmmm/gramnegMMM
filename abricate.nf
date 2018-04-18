@@ -18,6 +18,8 @@ version = '0.1'
 params.input_dir = false
 params.pattern_match = false
 params.output_dir = false
+params.input_db_dir = false
+params.input_db_included = false
 params.help = false
 
 // print help if required
@@ -35,7 +37,8 @@ def helpMessage() {
       --input_dir                        Path to directory containing paired fastq files
 
     Optional arguments:
-      --input_db                         Path to directory containing sequences file for the database
+      --input_db_dir                     Path to directory containing sequences file for the database
+      --input_db_included                Name of included database to use
    """.stripIndent()
 }
 
@@ -72,8 +75,20 @@ if (params.input_dir){
     exit 0
 }
 
-if (params.input_db) {
-    input_db_dir = params.input_db
+/*
+process abricate_checkIncluded {
+    output:
+    stdout into includedDBs
+
+    script:
+    """
+    ls /abricate/db/
+    """
+}
+*/
+
+if (params.input_db_dir) {
+    input_db_dir = params.input_db_dir
     input_db_name = file(input_db_dir).baseName
 
     process abricate_process {
@@ -93,11 +108,15 @@ if (params.input_db) {
        id = assemblies.baseName
        """
        abricate --setupdb
-       abricate ${assemblies} > ${id}.tab
+       abricate --db ${input_db_name} ${assemblies} > ${id}.tab
        """
     }
 } else {
-    log.info("No DB specified, continuing with default DBs")
+    if (params.input_db_included) {
+        input_db_included = params.input_db_included
+    } else {
+        input_db_included = 'resfinder'
+    }
 
     process abricate_process {
        echo true
@@ -114,7 +133,7 @@ if (params.input_db) {
        script:
        id = assemblies.baseName
        """
-       abricate ${assemblies} > ${id}.tab
+       abricate --db ${input_db_included} ${assemblies} > ${id}.tab
        """
    }
 }
