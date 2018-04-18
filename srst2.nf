@@ -90,7 +90,7 @@ if ( params.paired_read_dir ) {
        file db
        
        output:
-       file "${id}_SRST2.out*"
+       file "${id}_SRST.out*" into outputs
 
        script:
        """
