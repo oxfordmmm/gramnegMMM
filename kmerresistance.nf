@@ -16,6 +16,7 @@ version = '0.1'
 /***************** Setup inputs and channels ************************/
 // Defaults for configurable variables
 params.paired_read_dir = false
+params.single_read_dir = false
 params.pattern_match = false
 params.output_dir = false
 params.template_db = false
@@ -40,6 +41,7 @@ def helpMessage() {
     Options:
     One of these must be specified
       --paired_read_dir                  Path to directory containing paired fastq files
+      --single_read_dir                  Path to directory containing non-paired fastq files
    """.stripIndent()
 }
 
@@ -74,6 +76,12 @@ if ( params.paired_read_dir ) {
       .fromFilePairs( fastqs )
       .ifEmpty { error "Cannot find any reads matching: ${fastqs}" }
       .set { read_pairs }
+} else if ( params.single_read_dir ) {
+    fastqs = params.single_read_dir + '/' + pattern_match
+    Channel
+      .fromPath( fastqs )
+      .ifEmpty { error "Cannot find any bam files matching: ${fastqs}" }
+      .set {reads}
 } else {
     error "Please enter a directory of paired input fastq files"
     exit 0
@@ -81,13 +89,6 @@ if ( params.paired_read_dir ) {
 
 // set up template db
 if (params.template_db) {
-/*
-    Channel
-      .fromPath(params.template_db + ".*")
-      .ifEmpty { error "Cannot find any files for template db ${params.template_db} " }
-      .dump()
-      .set { template_db }
-*/
     template_db_prefix = file(params.template_db).baseName
     template_db_b = file(params.template_db+".b")
     template_db_comp_b = file(params.template_db+".comp.b")
@@ -95,52 +96,84 @@ if (params.template_db) {
     template_db_length_b = file(params.template_db+".length.b")
     template_db_name = file(params.template_db+".name")
     template_db_seq_b = file(params.template_db+".seq.b")
+} else {
+    error "Please enter a path for the template database"
+    exit 0
 }
 
 // set up species db
 if (params.species_db) {
-/*
-    Channel
-      .fromPath(params.species_db + ".*")
-      .ifEmpty { error "Cannot find any files for species db ${params.species_db} " }
-      .dump()
-      .set { species_db  }
-*/
     species_db_prefix = file(params.species_db).baseName
     species_db_b = file(params.species_db+".b")
     species_db_comp_b = file(params.species_db+".comp.b")
     species_db_fsa_b = file(params.species_db+".fsa.b")
     species_db_length_b = file(params.species_db+".length.b")
     species_db_name = file(params.species_db+".name")
+} else {
+    error "Please enter a path for the species database"
+    exit 0
 }
 
-process kmerresistance_process {
-    echo true
-    scratch true
 
-    publishDir output_dir, mode: 'copy'
+if (params.paired_read_dir) {
+    process kmerresistance_process {
+        echo true
+        scratch true
 
-    input:
-    set id, file(reads) from read_pairs
-    file template_db_b 
-    file template_db_comp_b
-    file template_db_index_b
-    file template_db_length_b
-    file template_db_name
-    file template_db_seq_b
-    file species_db_b
-    file species_db_comp_b
-    file species_db_fsa_b
-    file species_db_length_b
-    file species_db_name
+        publishDir output_dir, mode: 'copy'
+
+        input:
+        set id, file(reads) from read_pairs
+        file template_db_b
+        file template_db_comp_b
+        file template_db_index_b
+        file template_db_length_b
+        file template_db_name
+        file template_db_seq_b
+        file species_db_b
+        file species_db_comp_b
+        file species_db_fsa_b
+        file species_db_length_b
+        file species_db_name
+
+        output:
+        file "${id}.*" into outputs
+
+        script:
+        """
+        kmerresistance -i ${reads[0]} ${reads[1]} -o ${id} -t_db $template_db_prefix -s_db $species_db_prefix
+        """
+    }
+} else {
+    process kmerresistance_process {
+        echo true
+        scratch true
+
+        publishDir output_dir, mode: 'copy'
+
+        input:
+        file(read) from reads
+        file template_db_b 
+        file template_db_comp_b
+        file template_db_index_b
+        file template_db_length_b
+        file template_db_name
+        file template_db_seq_b
+        file species_db_b
+        file species_db_comp_b
+        file species_db_fsa_b
+        file species_db_length_b
+        file species_db_name
        
-    output:
-    file "${id}.*" into outputs
+        output:
+        file "${suffix}.*" into outputs
 
-    script: 
-    """
-    kmerresistance -i ${reads[0]} ${reads[1]} -o ${id} -t_db $template_db_prefix -s_db $species_db_prefix
-    """
+        script: 
+        suffix = read.baseName
+        """
+        kmerresistance -i ${read} -o ${suffix} -t_db $template_db_prefix -s_db $species_db_prefix
+        """
+    }
 }
 
 workflow.onComplete {
