@@ -38,7 +38,7 @@ def helpMessage() {
       --paired_read_dir                  Path to directory containing paired fastq files
 
    Options:
-      --additionalFlags                  Any additional flags to pass through to srst2 "must be surrounded by quotes", e.g. "--report_all_consensus" 
+      --report_all_consensus             passes this through to srst2
    """.stripIndent()
 }
 
