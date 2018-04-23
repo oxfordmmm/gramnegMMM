@@ -19,6 +19,7 @@ params.paired_read_dir = false
 params.pattern_match = false
 params.output_dir = false
 params.db = false
+params.report_all_consensus = false
 params.help = false
 
 // print help if required
@@ -34,10 +35,10 @@ def helpMessage() {
       --output_dir                       Path to output dir "must be surrounded by quotes"
       --pattern_match                    The regular expression that will match files e.g '*_{1,2}.fastq.gz'
       --db                               Path to a fasta used as a database
-
-    Options:
-    One of these must be specified
       --paired_read_dir                  Path to directory containing paired fastq files
+
+   Options:
+      --additionalFlags                  Any additional flags to pass through to srst2 "must be surrounded by quotes", e.g. "--report_all_consensus" 
    """.stripIndent()
 }
 
@@ -79,30 +80,51 @@ if ( params.paired_read_dir ) {
     exit 0
 }
 
-   process srst2_process {
-       echo true
-       scratch true
+if (params.report_all_consensus) {
+    process srst2_process {
+        echo true
+        scratch true
 
-       publishDir output_dir, mode: 'copy'
+        publishDir output_dir, mode: 'copy'
 
-       input:
-       set id, file(reads) from read_pairs
-       file db
+        input:
+        set id, file(reads) from read_pairs
+        file db
        
-       output:
-       file "${id}_SRST.out*" into outputs
+        output:
+        file "${id}_SRST.out*" into outputs
 
-       script:
-       """
-       srst2 --input_pe ${reads[0]} ${reads[1]} --output ${id}_SRST.out --log --gene_db $db
-       """
+        script:
+        """
+        srst2 --input_pe ${reads[0]} ${reads[1]} --output ${id}_SRST.out --log --gene_db $db --report_all_consensus
+        """
+    }
+} else {
+    process srst2_process {
+        echo true
+        scratch true
+
+        publishDir output_dir, mode: 'copy'
+
+        input:
+        set id, file(reads) from read_pairs
+        file db
+
+        output:
+        file "${id}_SRST.out*" into outputs
+
+        script:
+        """
+        srst2 --input_pe ${reads[0]} ${reads[1]} --output ${id}_SRST.out --log --gene_db $db ${additionalFlags}
+        """
+    }
 }
 
 workflow.onComplete {
-	log.info "Nextflow Version:  $workflow.nextflow.version"
-  	log.info "Command Line:      $workflow.commandLine"
-	log.info "Container:         $workflow.container"
-	log.info "Duration:          $workflow.duration"
-	log.info "Output Directory:  $params.output_dir"
+    log.info "Nextflow Version:  $workflow.nextflow.version"
+    log.info "Command Line:      $workflow.commandLine"
+    log.info "Container:         $workflow.container"
+    log.info "Duration:          $workflow.duration"
+    log.info "Output Directory:  $params.output_dir"
 }
 
