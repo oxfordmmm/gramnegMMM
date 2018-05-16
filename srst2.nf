@@ -115,7 +115,7 @@ if (params.report_all_consensus) {
 
         script:
         """
-        srst2 --input_pe ${reads[0]} ${reads[1]} --output ${id}_SRST.out --log --gene_db $db ${additionalFlags}
+        srst2 --input_pe ${reads[0]} ${reads[1]} --output ${id}_SRST.out --log --gene_db $db
         """
     }
 }
