@@ -25,6 +25,6 @@ RUN pip install git+https://github.com/katholt/srst2
 
 RUN git clone https://github.com/weizhongli/cdhit.git && cd cdhit && make && make install PREFIX=/usr/bin && cd ../ && rm -rf cdhit
 
-RUN git clone https://bitbucket.org/genomicepidemiology/kma.git && cd kma && gcc -O3 -o kma KMA.c -lm && gcc -O3 -o kma_index KMA_index.c -lm && gcc -O3 -o kma_shm KMA_SHM.c && mv kma /usr/bin && mv kma_index /usr/bin && mv kma_shm /usr/bin && cd .. && rm -rf kma
+RUN git clone https://bitbucket.org/genomicepidemiology/kma.git && cd kma && gcc -O3 -o kma KMA.c -lm -lpthread && gcc -O3 -o kma_index KMA_index.c -lm && gcc -O3 -o kma_shm KMA_SHM.c && mv kma /usr/bin && mv kma_index /usr/bin && mv kma_shm /usr/bin && cd .. && rm -rf kma
 
 RUN git clone https://bitbucket.org/genomicepidemiology/kmerresistance.git && cd kmerresistance && gcc -O3 -o kmerresistance KmerResistance.c -lm && mv kmerresistance /usr/bin && cd .. && rm -rf kmerresistance
