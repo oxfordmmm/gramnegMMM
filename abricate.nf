@@ -20,6 +20,8 @@ params.pattern_match = false
 params.output_dir = false
 params.input_db_dir = false
 params.input_db_included = false
+params.minid = 75
+params.mincov = 0
 params.help = false
 
 // print help if required
@@ -39,6 +41,8 @@ def helpMessage() {
     Optional arguments:
       --input_db_dir                     Path to directory containing sequences file for the database
       --input_db_included                Name of included database to use
+      --minid                            Minimum DNA %identity (default '75').
+      --mincov                           Minimum DNA %coverage (default '0').
    """.stripIndent()
 }
 
@@ -87,6 +91,9 @@ process abricate_checkIncluded {
 }
 */
 
+minid = params.minid
+mincov = params.mincov
+
 if (params.input_db_dir) {
     input_db_dir = params.input_db_dir
     input_db_name = file(input_db_dir).baseName
@@ -108,7 +115,7 @@ if (params.input_db_dir) {
        id = assemblies.baseName
        """
        abricate --setupdb
-       abricate --db ${input_db_name} ${assemblies} > ${id}.tab
+       abricate --db ${input_db_name} ${assemblies} --minid $minid --mincov $mincov  > ${id}.tab
        """
     }
 } else {
@@ -133,7 +140,7 @@ if (params.input_db_dir) {
        script:
        id = assemblies.baseName
        """
-       abricate --db ${input_db_included} ${assemblies} > ${id}.tab
+       abricate --db ${input_db_included} ${assemblies} --minid $minid --mincov $mincov > ${id}.tab
        """
    }
 }

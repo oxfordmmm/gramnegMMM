@@ -20,6 +20,9 @@ params.pattern_match = false
 params.output_dir = false
 params.db = false
 params.report_all_consensus = false
+params.min_coverage = 90
+params.max_divergence = 10
+params.min_depth = 5
 params.help = false
 
 // print help if required
@@ -39,6 +42,9 @@ def helpMessage() {
 
    Options:
       --report_all_consensus             passes this through to srst2
+      --min_coverage                     Minimum %coverage cutoff for gene reporting (default 90)
+      --max_divergence                   Maximum %divergence cutoff for gene reporting (default 10)
+      --min_depth                        Minimum mean depth to flag as dubious allele call (default 5)
    """.stripIndent()
 }
 
@@ -80,6 +86,10 @@ if ( params.paired_read_dir ) {
     exit 0
 }
 
+min_coverage = params.min_coverage
+max_divergence = params.max_divergence
+min_depth = params.min_depth
+
 if (params.report_all_consensus) {
     process srst2_process {
         echo true
@@ -96,7 +106,7 @@ if (params.report_all_consensus) {
 
         script:
         """
-        srst2 --input_pe ${reads[0]} ${reads[1]} --output ${id}_SRST.out --log --gene_db $db --report_all_consensus
+        srst2 --input_pe ${reads[0]} ${reads[1]} --output ${id}_SRST.out --log --gene_db $db --min_coverage ${min_coverage} --max_divergence {$max_divergence} --min_depth ${min_depth} --report_all_consensus
         """
     }
 } else {
@@ -115,7 +125,7 @@ if (params.report_all_consensus) {
 
         script:
         """
-        srst2 --input_pe ${reads[0]} ${reads[1]} --output ${id}_SRST.out --log --gene_db $db
+        srst2 --input_pe ${reads[0]} ${reads[1]} --output ${id}_SRST.out --log --gene_db $db --min_coverage ${min_coverage} --max_divergence {$max_divergence} --min_depth ${min_depth}
         """
     }
 }

@@ -21,6 +21,7 @@ params.pattern_match = false
 params.output_dir = false
 params.template_db = false
 params.species_db = false
+params.id = 70
 params.help = false
 
 // print help if required
@@ -42,6 +43,7 @@ def helpMessage() {
     One of these must be specified
       --paired_read_dir                  Path to directory containing paired fastq files
       --single_read_dir                  Path to directory containing non-paired fastq files
+      --id                               ID threshhold (default 70)
    """.stripIndent()
 }
 
@@ -114,6 +116,7 @@ if (params.species_db) {
     exit 0
 }
 
+id = params.id
 
 if (params.paired_read_dir) {
     process kmerresistance_process {
@@ -141,7 +144,7 @@ if (params.paired_read_dir) {
 
         script:
         """
-        kmerresistance -i ${reads[0]} ${reads[1]} -o ${id} -t_db $template_db_prefix -s_db $species_db_prefix
+        kmerresistance -i ${reads[0]} ${reads[1]} -o ${id} -t_db $template_db_prefix -s_db $species_db_prefix -id $id
         """
     }
 } else {
@@ -171,7 +174,7 @@ if (params.paired_read_dir) {
         script: 
         suffix = read.baseName
         """
-        kmerresistance -i ${read} -o ${suffix} -t_db $template_db_prefix -s_db $species_db_prefix
+        kmerresistance -i ${read} -o ${suffix} -t_db $template_db_prefix -s_db $species_db_prefix -id $id
         """
     }
 }
