@@ -99,7 +99,6 @@ if (params.input_db_dir) {
     input_db_name = file(input_db_dir).baseName
 
     process abricate_process {
-       echo true
        scratch true
        containerOptions "-B ${input_db_dir}:/abricate/db/${input_db_name}"
 
@@ -114,7 +113,7 @@ if (params.input_db_dir) {
        script:
        id = assemblies.baseName
        """
-       abricate --setupdb
+       abricate --setupdb > /dev/null
        abricate --db ${input_db_name} ${assemblies} --minid $minid --mincov $mincov  > ${id}.tab
        """
     }
@@ -126,7 +125,6 @@ if (params.input_db_dir) {
     }
 
     process abricate_process {
-       echo true
        scratch true
 
        publishDir output_dir, mode: 'copy'
@@ -146,7 +144,6 @@ if (params.input_db_dir) {
 }
 
 process abricate_summarise {
-   echo true
    scratch true
 
    publishDir output_dir, mode: 'copy'
