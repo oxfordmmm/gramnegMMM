@@ -116,7 +116,7 @@ if (params.species_db) {
     exit 0
 }
 
-id = params.id
+idthres = params.idthres
 
 if (params.paired_read_dir) {
     process kmerresistance_process {
