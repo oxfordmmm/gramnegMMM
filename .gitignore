@@ -1,0 +1,9 @@
+testInput/*
+DBs/*
+output/*
+
+.nextflow*
+report.html*
+timeline.html*
+trace.txt*
+work*

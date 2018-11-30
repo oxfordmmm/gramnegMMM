@@ -120,7 +120,6 @@ idthres = params.idthres
 
 if (params.paired_read_dir) {
     process kmerresistance_process {
-        echo true
         scratch true
 
         publishDir output_dir, mode: 'copy'
@@ -140,7 +139,7 @@ if (params.paired_read_dir) {
         file species_db_name
 
         output:
-        file "${id}.*" into outputs
+        file "${name}.*" into outputs
 
         script:
         """
@@ -149,7 +148,6 @@ if (params.paired_read_dir) {
     }
 } else {
     process kmerresistance_process {
-        echo true
         scratch true
 
         publishDir output_dir, mode: 'copy'
