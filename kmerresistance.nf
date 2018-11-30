@@ -21,7 +21,7 @@ params.pattern_match = false
 params.output_dir = false
 params.template_db = false
 params.species_db = false
-params.id = 70
+params.idthres = 70
 params.help = false
 
 // print help if required
@@ -43,7 +43,7 @@ def helpMessage() {
     One of these must be specified
       --paired_read_dir                  Path to directory containing paired fastq files
       --single_read_dir                  Path to directory containing non-paired fastq files
-      --id                               ID threshhold (default 70)
+      --idthres                               ID threshhold (default 70)
    """.stripIndent()
 }
 
@@ -71,7 +71,7 @@ pattern_match = check_parameter(params, "pattern_match")
 if ( params.paired_read_dir ) {
     /*
      * Creates the `read_pairs` channel that emits for each read-pair a tuple containing
-     * three elements: the pair ID, the first read-pair file and the second read-pair file
+     * three elements: the pair name, the first read-pair file and the second read-pair file
      */
     fastqs = params.paired_read_dir + '/' + pattern_match
     Channel
@@ -126,7 +126,7 @@ if (params.paired_read_dir) {
         publishDir output_dir, mode: 'copy'
 
         input:
-        set id, file(reads) from read_pairs
+        set name, file(reads) from read_pairs
         file template_db_b
         file template_db_comp_b
         file template_db_index_b
@@ -144,7 +144,7 @@ if (params.paired_read_dir) {
 
         script:
         """
-        kmerresistance -i ${reads[0]} ${reads[1]} -o ${id} -t_db $template_db_prefix -s_db $species_db_prefix -id $id
+        kmerresistance -i ${reads[0]} ${reads[1]} -o ${name} -t_db $template_db_prefix -s_db $species_db_prefix -id $idthres
         """
     }
 } else {
@@ -174,7 +174,7 @@ if (params.paired_read_dir) {
         script: 
         suffix = read.baseName
         """
-        kmerresistance -i ${read} -o ${suffix} -t_db $template_db_prefix -s_db $species_db_prefix -id $id
+        kmerresistance -i ${read} -o ${suffix} -t_db $template_db_prefix -s_db $species_db_prefix -id $idthres
         """
     }
 }
