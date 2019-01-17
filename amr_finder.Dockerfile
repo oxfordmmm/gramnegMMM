@@ -12,4 +12,4 @@ RUN mkdir amrfinder && cd amrfinder && curl -sL https://github.com/ncbi/amr/rele
     && ./amrfinder.pl -U \
     && ./amrfinder.pl -p test_prot.fa
 
-ENV PATH="~/amrfinder:${PATH}"
+RUN ln -s /amrfinder/amrfinder.pl /usr/local/bin
