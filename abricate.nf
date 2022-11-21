@@ -100,6 +100,7 @@ if (params.input_db_dir) {
 
     process abricate_process {
        scratch true
+       label 'abricate'
        containerOptions "-B ${input_db_dir}:/abricate/db/${input_db_name}"
 
        publishDir output_dir, mode: 'copy'
@@ -126,6 +127,7 @@ if (params.input_db_dir) {
 
     process abricate_process {
        scratch true
+       label 'abricate'
 
        publishDir output_dir, mode: 'copy'
 
@@ -145,6 +147,7 @@ if (params.input_db_dir) {
 
 process abricate_summarise {
    scratch true
+   label 'abricate'
 
    publishDir output_dir, mode: 'copy'
 

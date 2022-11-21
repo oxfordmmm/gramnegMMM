@@ -1,9 +1,13 @@
 testInput/*
 DBs/*
 output/*
+test_data/*
 
 .nextflow*
 report.html*
 timeline.html*
 trace.txt*
 work*
+
+*.fa
+*.tsv
